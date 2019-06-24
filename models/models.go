@@ -3,7 +3,9 @@ package models
 import (
 	"bin_blog/pkg/setting"
 	"fmt"
+	//"fmt"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"log"
 )
 
@@ -17,7 +19,7 @@ type Models struct {
 
 func init() {
 	var (
-		err error
+		err                                               error
 		dbType, dbNmae, user, password, host, tablePrefix string
 	)
 	sec, err := setting.Cfg.GetSection("database")
@@ -30,13 +32,14 @@ func init() {
 	password = sec.Key("PASSWORD").String()
 	host = sec.Key("HOST").String()
 	tablePrefix = sec.Key("TABLE_PREFIX").String()
-	db, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s>charset=utf8&parseTime=True&loc=local",
+	//db,err :=gorm.Open("mysql","root:root@(127.0.0.1:3306)/blog?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open(dbType, fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		user,
 		password,
 		host,
 		dbNmae))
-
 	if err != nil {
+		fmt.Println(err)
 		log.Println(err)
 	}
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {

@@ -50,7 +50,7 @@ func AddTags(c *gin.Context) {
 
 	code := e.INVALID_PARAMS
 	if !valid.HasErrors() {
-		if !models.ExExistTagByName(name) {
+		if !models.ExistTagByName(name) {
 			code = e.SUCCESS
 			models.AddTags(name, state, createBy)
 		} else {
@@ -67,10 +67,66 @@ func AddTags(c *gin.Context) {
 
 //修改文章标签
 func UpdateTags(c *gin.Context) {
+	id := com.StrTo(c.Param("id")).MustInt()
+	name := c.Query("name")
+	modifiedBy := c.Query("modifiedBy ")
+	vaild := validation.Validation{}
+
+	var state int = -1
+	if arg := c.Query("state"); arg != "" {
+		state := com.StrTo(arg).MustInt()
+		vaild.Range(state, 0, 1, "state").Message("状态只能0或者1")
+	}
+	vaild.Required(id, "id").Message("Id不能为空")
+	vaild.Required(modifiedBy, "modifiedBy").Message("修改人不能为空")
+	vaild.MaxSize(modifiedBy, 10, "modifiedBy").Message("长度最长为10")
+	vaild.MaxSize(name, 5, "name").Message("长度最长为5")
+
+	code := e.INVALID_PARAMS
+	if !vaild.HasErrors() {
+		code = e.SUCCESS
+		if models.ExistTagByID(id) {
+			data := make(map[string]interface{})
+			data["modified_by"] = modifiedBy
+			if name != "" {
+				data["name"] = name
+			}
+			if state != -1 {
+				data["state"] = state
+			}
+			models.EditTag(id, data)
+		} else {
+			code = e.ERROR_NOT_EXIST_TAG
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": code,
+		"msg":  e.GetMsg(code),
+		"data": make(map[string]string),
+	})
 
 }
 
 //删除文章标签
 func DeleteTags(c *gin.Context) {
+	id := com.StrTo(c.Param("id")).MustInt()
 
+	vaild := validation.Validation{}
+	vaild.Min(id, 1, "id").Message("iD必须大于0")
+
+	code := e.INVALID_PARAMS
+
+	if !vaild.HasErrors() {
+		code = e.SUCCESS
+		if models.ExistTagByID(id) {
+			models.DeleteTag(id)
+		} else {
+			code = e.ERROR_NOT_EXIST_TAG
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": code,
+		"msg":  e.GetMsg(code),
+		"data": make(map[string]string),
+	})
 }

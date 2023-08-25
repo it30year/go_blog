@@ -19,7 +19,5 @@ func main() {
 	}
 	s.ListenAndServe()
 	fmt.Println("Hello, playground")
-	fmt.Println("Hello, playground")
-	fmt.Println("Hello, playground")
-	fmt.Println("Hello, playground")
+
 }
